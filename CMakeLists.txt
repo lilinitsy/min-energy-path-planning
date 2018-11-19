@@ -8,6 +8,7 @@ project(min-pe-planning)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  gazebo_ros
   roscpp
 )
 
@@ -105,6 +106,8 @@ catkin_package(
 #  LIBRARIES min-pe-planning
 #  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
+  DEPENDS 
+    gazebo_ros
 )
 
 ###########
@@ -116,6 +119,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${gazebo_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
