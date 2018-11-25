@@ -13,6 +13,19 @@
 #include <gazebo_msgs/ModelState.h>
 
 
+
+/*
+/gazebo publishes	/gazebo/link_states
+					/gazebo/model_states
+					/gazebo/parameter_descriptions
+					/gazebo/parameter_updates
+
+/gazebo subscribes	/gazebo/set_model_state
+					/gazebo/set_link_state
+*/
+
+
+
 class Robot
 {
 	public:
@@ -28,6 +41,7 @@ class Robot
 		ros::Publisher pioneer_left_wheel;
 
 		Robot();
+		void run();
 };
 
 
