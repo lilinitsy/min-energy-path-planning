@@ -7,7 +7,7 @@
 // MAY BE USEFUL
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "min-pe-planner");
+	ros::init(argc, argv, "Minimum_Potential_Energy_Planetary_Exploration");
 	Robot robot = Robot();
 
 	while(ros::ok())
