@@ -21,7 +21,6 @@ public class QuadBox
 {
 	public Vector3 center;
 	public float half_dimension;
-	public bool clear = true;
 
 	public QuadBox()
 	{
@@ -82,11 +81,9 @@ public class QuadBox
 		if(colliders.Length > 0)
 		{
 			Debug.Log("Colliders here\n");
-			clear = false;
 			return false;
 		}
 		
-		clear = true;
 		return true;
 	}
 

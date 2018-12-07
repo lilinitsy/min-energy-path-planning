@@ -9,8 +9,8 @@ public class QuadTreeRun : MonoBehaviour
 	// Use this for initialization
 	void Start()
 	{
-		QuadBox bound = new QuadBox(new Vector3(0, 1), 10.0f);
-		float mhd = 10;
+		QuadBox bound = new QuadBox(new Vector3(0, 1, 0), 10.0f);
+		float mhd = 0.5f;
 
 		quadtree = new QuadTree(bound, mhd);
 		quadtree.print();
@@ -21,5 +21,10 @@ public class QuadTreeRun : MonoBehaviour
 	void Update()
 	{
 		
+	}
+
+	void OnDrawGizmos()
+	{
+		quadtree.draw();
 	}
 }

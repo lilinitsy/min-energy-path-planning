@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Lidar : MonoBehaviour
 {
-	public float degree_sweep_increment = 1.0f;
+	public float degree_sweep_increment = 3.0f;
 	// Start angle for initial pass
 	public float max_height_angle = 15.0f;
 	// maximum distance for which a hit can be registered
@@ -12,6 +12,7 @@ public class Lidar : MonoBehaviour
 	// number of 360 degree passes, each at a varying angle
 	public int number_vertical_passes = 30;
 
+	// i + 1 is vertical, j + 1 is horizontal
 	public Vector3[ , ] hit_points;
 
 	// Use this for initialization
@@ -59,7 +60,7 @@ public class Lidar : MonoBehaviour
 	{
 		Gizmos.color = Color.blue;
 		int horizontal_passes = (int) (360.0f / degree_sweep_increment);
-
+		Debug.Log("Lidar gizmos");
 		for(int i = 0; i < number_vertical_passes; i++)
 		{
 			for(int j = 0; j < horizontal_passes; j++)
