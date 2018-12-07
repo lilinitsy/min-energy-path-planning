@@ -10,7 +10,7 @@ public class Lidar : MonoBehaviour
 	// maximum distance for which a hit can be registered
 	public float max_range = 10.0f;
 	// number of 360 degree passes, each at a varying angle
-	public int number_vertical_passes = 30;
+	public int number_vertical_passes = 10;
 
 	// i + 1 is vertical, j + 1 is horizontal
 	public Vector3[ , ] hit_points;
@@ -49,6 +49,8 @@ public class Lidar : MonoBehaviour
 				}
 				
 				ray.direction = side_rotation * ray.direction;
+				Debug.Log("ray direction: " + ray.direction.ToString("F4"));
+				Debug.Log("i, j: " + i + " " + j);
 			}
 			
 			ray.direction = up_rotation * ray.direction;
