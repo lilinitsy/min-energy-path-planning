@@ -57,6 +57,7 @@
      <Compile Include="Assets\Scripts\QuadBox.cs" />
      <Compile Include="Assets\Scripts\QuadTree.cs" />
      <Compile Include="Assets\Scripts\QuadTreeRun.cs" />
+     <Compile Include="Assets\Scripts\Robot.cs" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>C:/Users/adminn/Min-PE-Path-Planner/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
  </Reference>
