@@ -23,6 +23,11 @@ public class QuadTreeRun : MonoBehaviour
 		
 	}
 
+	public void build_details()
+	{
+
+	}
+
 	void OnDrawGizmos()
 	{
 		quadtree.draw();

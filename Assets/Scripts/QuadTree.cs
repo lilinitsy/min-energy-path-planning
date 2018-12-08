@@ -77,12 +77,6 @@ public class QuadTree
 		}
 	}
 
-	/*
-	QUADRANT get_quadrant_containing_point(Vector3 point)
-	{
-
-	} */
-
 
 	public void print()
 	{
@@ -123,6 +117,59 @@ public class QuadTree
 		leaf = false;
 	}
 
+
+	public bool contains_point(Vector3 point)
+	{
+		return boundary.contains_point(point);
+	}
+
+
+	// Should only be called if contains_point
+	QuadTree get_quadtree_containing_point(Vector3 point)
+	{
+		if(!leaf)
+		{
+			if(top_left.contains_point(point))
+			{
+				return top_left.get_quadtree_containing_point(point);
+			}
+
+			else if(top_right.contains_point(point))
+			{
+				return top_right.get_quadtree_containing_point(point);
+			}
+
+			else if(bottom_left.contains_point(point))
+			{
+				return bottom_left.get_quadtree_containing_point(point);
+			}
+
+			else if(bottom_right.contains_point(point))
+			{
+				return bottom_right.get_quadtree_containing_point(point);
+			}
+		}
+
+		return this;
+	}
+
+
+	public List<QuadTree> list_leaf_nodes()
+	{
+		List<QuadTree> leaf_nodes = new List<QuadTree>();
+
+		if(leaf)
+		{
+			leaf_nodes.Add(this);
+			return leaf_nodes;
+		}
+
+		//List<QuadTree> top_left 
+		// top_right, bottom_right, bottom_left
+		return leaf_nodes;
+	}
+
+
 	public void draw()
 	{
 		Gizmos.color = Color.green;
@@ -140,7 +187,5 @@ public class QuadTree
 			bottom_left.draw();
 			bottom_right.draw();
 		}
-
 	}
-
 }

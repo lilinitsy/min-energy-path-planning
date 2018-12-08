@@ -80,8 +80,13 @@ public class QuadBox
 		
 		if(colliders.Length > 0)
 		{
-			Debug.Log("Colliders here\n");
-			return false;
+			for(int i = 0; i < colliders.Length; i++)
+			{
+				if(colliders[i].gameObject.tag != "Player")
+				{
+					return false;
+				}
+			}
 		}
 		
 		return true;
