@@ -16,7 +16,7 @@ public class QuadTree
 	public float minimum_half_dimension = 0.5f;
 	// Is there an object in here?
 	public bool clear = true;
-	public bool has_children = false;
+	public bool leaf = true;
 
 	public QuadTree()
 	{
@@ -56,10 +56,10 @@ public class QuadTree
 			Debug.Log("Is top_left null?" + top_left == null);
 			//top_left.boundary.print();
 			// top_left null -> no children; check that it can still subdivide
-			Debug.Log("Has children? " + has_children);
+			Debug.Log("leaf? " + leaf);
 			Debug.Log("boundary.half_dimension: " + boundary.half_dimension);
 			Debug.Log("2.0 * minimum_half_dimension: " + 2.0f * minimum_half_dimension);
-			if(!has_children && boundary.half_dimension >=  2.0f * minimum_half_dimension)
+			if(leaf && boundary.half_dimension >=  2.0f * minimum_half_dimension)
 			{
 				Debug.Log("Right above subdivide");
 				subdivide();
@@ -81,7 +81,7 @@ public class QuadTree
 	QUADRANT get_quadrant_containing_point(Vector3 point)
 	{
 
-	}*/
+	} */
 
 
 	public void print()
@@ -120,7 +120,7 @@ public class QuadTree
 		top_right = new QuadTree(top_right_box, minimum_half_dimension);
 		bottom_left = new QuadTree(bottom_left_box, minimum_half_dimension);
 		bottom_right = new QuadTree(bottom_right_box, minimum_half_dimension);
-		has_children = true;
+		leaf = false;
 	}
 
 	public void draw()
