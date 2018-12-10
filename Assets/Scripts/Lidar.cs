@@ -15,6 +15,8 @@ public class Lidar : MonoBehaviour
 	// i + 1 is vertical, j + 1 is horizontal
 	public Vector3[ , ] hit_points;
 
+	public Vector3[ , ] finite_points;
+
 	// Use this for initialization
 	void Start()
 	{
@@ -28,10 +30,11 @@ public class Lidar : MonoBehaviour
 		Quaternion side_rotation = Quaternion.AngleAxis(degree_sweep_increment, transform.forward);
 		Quaternion up_rotation = Quaternion.AngleAxis(-degree_sweep_increment, transform.right);
 
+		RaycastHit hit;
 		Ray ray = new Ray();
 		ray.origin = transform.position;
 		ray.direction = transform.forward;
-		RaycastHit hit;
+
 
 		int horizontal_passes = (int) (360.0f / degree_sweep_increment);
 		for(int i = 0; i < number_vertical_passes; i++)
@@ -49,12 +52,10 @@ public class Lidar : MonoBehaviour
 				}
 				
 				ray.direction = side_rotation * ray.direction;
-				Debug.Log("ray direction: " + ray.direction.ToString("F4"));
-				Debug.Log("i, j: " + i + " " + j);
 			}
 			
 			ray.direction = up_rotation * ray.direction;
-		}
+		} 
 	}
 	
 	// Drawing the gizmos will be very slow
@@ -67,7 +68,10 @@ public class Lidar : MonoBehaviour
 		{
 			for(int j = 0; j < horizontal_passes; j++)
 			{
-				Gizmos.DrawSphere(hit_points[i, j], 0.1f);
+				if(Vector3.Distance(hit_points[i, j], transform.position) > 1.50f)
+				{
+					Gizmos.DrawSphere(hit_points[i, j], 0.1f);
+				}	
 			}
 		}
 	}

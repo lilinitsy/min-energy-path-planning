@@ -50,18 +50,10 @@ public class QuadTree
 	{
 		if(!boundary.cell_clear())
 		{
-			Debug.Log("Not yet in subdivide if");
 			clear = false;
 
-			Debug.Log("Is top_left null?" + top_left == null);
-			//top_left.boundary.print();
-			// top_left null -> no children; check that it can still subdivide
-			Debug.Log("leaf? " + leaf);
-			Debug.Log("boundary.half_dimension: " + boundary.half_dimension);
-			Debug.Log("2.0 * minimum_half_dimension: " + 2.0f * minimum_half_dimension);
 			if(leaf && boundary.half_dimension >=  2.0f * minimum_half_dimension)
 			{
-				Debug.Log("Right above subdivide");
 				subdivide();
 				top_left.build_quadtree();
 				top_right.build_quadtree();
@@ -163,7 +155,13 @@ public class QuadTree
 			leaf_nodes.Add(this);
 			return leaf_nodes;
 		}
+		
+		leaf_nodes.AddRange(top_left.list_leaf_nodes());
+		leaf_nodes.AddRange(top_right.list_leaf_nodes());
+		leaf_nodes.AddRange(bottom_left.list_leaf_nodes());
+		leaf_nodes.AddRange(bottom_right.list_leaf_nodes());
 
+		//leaf_nodes.Add(top_left.list_leaf_nodes());
 		//List<QuadTree> top_left 
 		// top_right, bottom_right, bottom_left
 		return leaf_nodes;
@@ -181,7 +179,6 @@ public class QuadTree
 
 		if(top_left != null)
 		{
-			Debug.Log("top left not null");
 			top_left.draw();
 			top_right.draw();
 			bottom_left.draw();
