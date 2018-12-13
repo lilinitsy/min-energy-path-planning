@@ -70,7 +70,7 @@ public class Lidar : MonoBehaviour
 			{
 				if(Vector3.Distance(hit_points[i, j], transform.position) > 1.50f)
 				{
-					Gizmos.DrawSphere(hit_points[i, j], 0.1f);
+				//	Gizmos.DrawSphere(hit_points[i, j], 0.1f);
 				}	
 			}
 		}

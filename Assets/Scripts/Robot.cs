@@ -64,11 +64,10 @@ public class Robot : MonoBehaviour
 	{
 		//Vector3 direction_robot_to_point = Vector3.Normalize(transform.position - possible_node.position);
 		//Debug.Log("direction vector: " + direction_robot_to_point.ToString("F5"));
-
 		float angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
 		Debug.Log("Transform.forward: " + transform.forward.ToString("F4"));
 		Debug.Log("Angle between position and the node position " + possible_node.position.ToString("F4") + ": " + angle);
-
+		Gizmos.DrawSphere(possible_node.position, 0.1f);
 		// Up 1, left 1
 		/*if(Vector3.SignedAngle(transform.position, direction_robot_to_point, transform.forward) < 45)
 		{
