@@ -11,15 +11,18 @@ public class Robot : MonoBehaviour
 	private float total_energy = 0.0f;
 	private float gravity;
 	public Vector3 goal;
-	public QuadTreeRun quadtree;
 	private Lidar lidar;
 
 	private List<Node> global_path;
+
+
+	private List<Node> tmp_gizmo_drawer;
 
 	// Use this for initialization
 	void Start()
 	{
 		lidar = GetComponentInChildren<Lidar>();
+		tmp_gizmo_drawer = new List<Node>();
 		//global_path = AStar(quadtree.quadtree, goal);
 		k = 1.0f + k;
 		gravity = Physics.gravity.y;
@@ -40,13 +43,14 @@ public class Robot : MonoBehaviour
 		// THEN TRY TO FIND THE dPI/dQ & dPI/dY MIN ENERGY MAX DISTANCE INTERSECTION
 		Node[ , ] sample_possible_nodes = sample_lidar();
 		List<Node> candidate_nodes = new List<Node>();
+		tmp_gizmo_drawer.Clear();
 
 		for(int i = 1; i < sample_possible_nodes.GetLength(0) - 1; i++)
 		{
 			for(int j = 1; j < sample_possible_nodes.GetLength(1) - 1; j++)
 			{
 				// check for position
-				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity)
+				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
 				{
 					Node possible_node = new Node(sample_possible_nodes[i, j].position);
 					float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
@@ -64,19 +68,41 @@ public class Robot : MonoBehaviour
 	{
 		//Vector3 direction_robot_to_point = Vector3.Normalize(transform.position - possible_node.position);
 		//Debug.Log("direction vector: " + direction_robot_to_point.ToString("F5"));
-		float angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
+		/*float angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
 		Debug.Log("Transform.forward: " + transform.forward.ToString("F4"));
 		Debug.Log("Angle between position and the node position " + possible_node.position.ToString("F4") + ": " + angle);
-		Gizmos.DrawSphere(possible_node.position, 0.1f);
+		tmp_gizmo_drawer.Add(possible_node);*/
 		// Up 1, left 1
 		/*if(Vector3.SignedAngle(transform.position, direction_robot_to_point, transform.forward) < 45)
 		{
 			float angle = Vector3.Angle(possible_node.position, current_possible_nodes[i - 1, j + 1].position);
 		}*/
 		
-		
 
-		return 1.0f;
+		// angle = change in y / 
+		Vector2 robot_q = new Vector2(transform.position.x, transform.position.z);
+		Vector2 node_q = new Vector2(possible_node.position.x, possible_node.position.z);
+		float qdist = Vector2.Distance(robot_q, node_q);
+		float ydist = transform.position.y - 0.5f - possible_node.position.y;
+		float angle = 0.0f;
+
+		if(Mathf.Abs(qdist) > 0.1f)
+		{
+			angle = Mathf.Tan(ydist / qdist) * Mathf.Rad2Deg;
+		}
+		
+		Debug.Log("Angle: " + angle);
+		return angle;
+	}
+
+
+	void OnDrawGizmosSelected()
+	{
+		Gizmos.color = Color.cyan;
+		for(int i = 0; i < tmp_gizmo_drawer.Count; i++)
+		{
+			Gizmos.DrawSphere(tmp_gizmo_drawer[i].position, 0.1f);
+		}
 	}
 
 	
@@ -96,15 +122,36 @@ public class Robot : MonoBehaviour
 		return sample_points;
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	// MIGHT JUST WANT TO DO AN RRT
-	private List<Node> AStar(QuadTree qt, Vector3 goal)
+	private List<Node> AStar(Vector3 goal)
 	{
 		List<Node> path = new List<Node>();
 		// closed set
 		List<Node> evaluated_nodes = new List<Node>();
 		// open set
 		List<Node> open_nodes = new List<Node>();
-		List<QuadTree> leaf_quadtrees = qt.list_leaf_nodes();
 		// cost of getting from start node to node n
 		List<float> gscores = new List<float>();
 		List<float> fscores = new List<float>();
@@ -113,14 +160,6 @@ public class Robot : MonoBehaviour
 		open_nodes.Add(start);
 		gscores.Add(0);
 		fscores.Add(heuristic_cost(start.position, goal));
-
-		for(int i = 0; i < leaf_quadtrees.Count; i++)
-		{
-			Node quadtree_node = new Node(leaf_quadtrees[i].boundary.center);
-			open_nodes.Add(quadtree_node);
-			gscores.Add(Mathf.Infinity);
-			fscores.Add(heuristic_cost(quadtree_node.position, goal));
-		}
 
 		while(open_nodes.Count > 0)
 		{
