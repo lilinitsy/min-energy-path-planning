@@ -45,9 +45,9 @@ public class Robot : MonoBehaviour
 		List<Node> candidate_nodes = new List<Node>();
 		tmp_gizmo_drawer.Clear();
 
-		for(int i = 1; i < sample_possible_nodes.GetLength(0) - 1; i++)
+		for(int i = 0; i < sample_possible_nodes.GetLength(0) - 1; i++)
 		{
-			for(int j = 1; j < sample_possible_nodes.GetLength(1) - 1; j++)
+			for(int j = 0; j < sample_possible_nodes.GetLength(1) - 1; j++)
 			{
 				// check for position
 				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
@@ -56,7 +56,6 @@ public class Robot : MonoBehaviour
 					float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
 					possible_node.calculate_energy(transform.position, k, mass, angle);
 					candidate_nodes.Add(possible_node);
-				
 				}
 			}
 		}
@@ -68,8 +67,10 @@ public class Robot : MonoBehaviour
 	{
 		//Vector3 direction_robot_to_point = Vector3.Normalize(transform.position - possible_node.position);
 		//Debug.Log("direction vector: " + direction_robot_to_point.ToString("F5"));
-		/*float angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
-		Debug.Log("Transform.forward: " + transform.forward.ToString("F4"));
+		//float direction_angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
+		float direction_angle = Vector3.AngleBetween(transform.position, possible_node.position) * Mathf.Rad2Deg;
+		Debug.Log("Directin angle: " + direction_angle);
+		/*Debug.Log("Transform.forward: " + transform.forward.ToString("F4"));
 		Debug.Log("Angle between position and the node position " + possible_node.position.ToString("F4") + ": " + angle);
 		tmp_gizmo_drawer.Add(possible_node);*/
 		// Up 1, left 1
@@ -88,10 +89,16 @@ public class Robot : MonoBehaviour
 
 		if(Mathf.Abs(qdist) > 0.1f)
 		{
-			angle = Mathf.Tan(ydist / qdist) * Mathf.Rad2Deg;
-		}
 		
-		Debug.Log("Angle: " + angle);
+			Debug.Log("Possible node y: " + possible_node.position.y);
+			tmp_gizmo_drawer.Add(possible_node);
+			angle = Mathf.Tan(ydist / qdist) * Mathf.Rad2Deg;
+			Debug.Log("Angle: " + angle);
+		}
+
+		
+
+		
 		return angle;
 	}
 

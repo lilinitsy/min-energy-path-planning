@@ -63,7 +63,6 @@ public class Lidar : MonoBehaviour
 	{
 		Gizmos.color = Color.blue;
 		int horizontal_passes = (int) (360.0f / degree_sweep_increment);
-		Debug.Log("Lidar gizmos");
 		for(int i = 0; i < number_vertical_passes; i++)
 		{
 			for(int j = 0; j < horizontal_passes; j++)
