@@ -60,6 +60,10 @@ public class Robot : MonoBehaviour
 			}
 		}
 
+		for(int i = 0; i < candidate_nodes.Count; i++)
+		{
+			
+		}
 	}
 
 
@@ -107,11 +111,6 @@ public class Robot : MonoBehaviour
 				Debug.Log("Angle: " + angle);
 			}
 		}
-
-		
-
-		
-
 		
 		return angle;
 	}

@@ -12,11 +12,13 @@ public class Node
 
 	public Node()
 	{
-
+		position = new Vector3(0.0f, 0.0f, 0.0f);
+		children = new List<Node>();
 	}
 
 	public Node(Vector3 p)
 	{
+		children = new List<Node>();
 		position = p;
 	}
 
@@ -30,11 +32,11 @@ public class Node
 
 		float u_potential = 0.5f * k * (q * q) 
 							+ 0.5f * k * (y * y);
-		float v_potential = -1.0f * mass * Physics.gravity.y * y * Mathf.Cos(angle)
-							- mass * Physics.gravity.y * q;
+		float v_potential = -1.0f * mass * Physics.gravity.y * y * Mathf.Sin(angle)
+							- mass * Physics.gravity.y * q * Mathf.Cos(angle);
 	
-		dPI_dQ = k * q - mass * Physics.gravity.y;
-		dPI_dY = k * y - mass * Physics.gravity.y * Mathf.Cos(angle);
+		dPI_dQ = k * q - mass * Physics.gravity.y * Mathf.Cos(angle);
+		dPI_dY = k * y - mass * Physics.gravity.y * Mathf.Sin(angle);
 
 		energy = u_potential + v_potential;
 	}

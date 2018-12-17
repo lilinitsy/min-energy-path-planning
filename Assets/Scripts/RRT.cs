@@ -154,12 +154,12 @@ public class RRT
 		return 0;
 	}
 
-/*	// Can ignore y
-	private Vector3 pick_local_goal_position(Vector3 start)
+	// Can ignore y, pick and x and z, and then follow up the norm of the hit object? hmm...
+	/*private Vector3 pick_local_goal_position(Vector3 start)
 	{
-		int x = start.x +
-	}
-*/
+		int x = start.x + step_size
+	}*/
+
 
 	private void remove_from_leaf_list(Node node)
 	{
