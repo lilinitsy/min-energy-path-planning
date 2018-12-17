@@ -60,9 +60,11 @@ public class Robot : MonoBehaviour
 			}
 		}
 
+
+		// MIGHT WANT TO SQUARE THESE?
 		for(int i = 0; i < candidate_nodes.Count; i++)
 		{
-			
+			Debug.Log("node dQ: " + candidate_nodes[i].dPI_dQ + "\tnode dY: " + candidate_nodes[i].dPI_dY + "\tnode position: " + candidate_nodes[i].position);
 		}
 	}
 
@@ -143,28 +145,6 @@ public class Robot : MonoBehaviour
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// MIGHT JUST WANT TO DO AN RRT
 	private List<Node> AStar(Vector3 goal)
 	{
 		List<Node> path = new List<Node>();
