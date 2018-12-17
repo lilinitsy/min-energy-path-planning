@@ -45,9 +45,9 @@ public class Robot : MonoBehaviour
 		List<Node> candidate_nodes = new List<Node>();
 		tmp_gizmo_drawer.Clear();
 
-		for(int i = 0; i < sample_possible_nodes.GetLength(0) - 1; i++)
+		for(int i = 1; i < sample_possible_nodes.GetLength(0) - 1; i++)
 		{
-			for(int j = 0; j < sample_possible_nodes.GetLength(1) - 1; j++)
+			for(int j = 1; j < sample_possible_nodes.GetLength(1) - 1; j++)
 			{
 				// check for position
 				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
@@ -65,36 +65,50 @@ public class Robot : MonoBehaviour
 
 	private float estimate_steepness_angle(Node possible_node, Node[ , ] current_possible_nodes, int i, int j)
 	{
-		//Vector3 direction_robot_to_point = Vector3.Normalize(transform.position - possible_node.position);
-		//Debug.Log("direction vector: " + direction_robot_to_point.ToString("F5"));
-		//float direction_angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
-		float direction_angle = Vector3.AngleBetween(transform.position, possible_node.position) * Mathf.Rad2Deg;
-		Debug.Log("Directin angle: " + direction_angle);
-		/*Debug.Log("Transform.forward: " + transform.forward.ToString("F4"));
-		Debug.Log("Angle between position and the node position " + possible_node.position.ToString("F4") + ": " + angle);
-		tmp_gizmo_drawer.Add(possible_node);*/
-		// Up 1, left 1
-		/*if(Vector3.SignedAngle(transform.position, direction_robot_to_point, transform.forward) < 45)
-		{
-			float angle = Vector3.Angle(possible_node.position, current_possible_nodes[i - 1, j + 1].position);
-		}*/
-		
+		float direction_angle = Vector3.SignedAngle(transform.position, possible_node.position, transform.forward);
+		Debug.Log("Direction angle: " + direction_angle);
 
 		// angle = change in y / 
-		Vector2 robot_q = new Vector2(transform.position.x, transform.position.z);
+		Vector2 previous_node_q;
 		Vector2 node_q = new Vector2(possible_node.position.x, possible_node.position.z);
-		float qdist = Vector2.Distance(robot_q, node_q);
+
+		if(direction_angle >= 0.0f && direction_angle < 45.0f)
+		{
+			previous_node_q = new Vector2(current_possible_nodes[i, j + 1].position.x, current_possible_nodes[i, j + 1].position.z);
+		}
+
+		else if(direction_angle >= 45.0f)
+		{
+			previous_node_q = new Vector2(current_possible_nodes[i + 1, j + 1].position.x, current_possible_nodes[i + 1, j + 1].position.z);
+		}
+
+		else if(direction_angle < 0.0f && direction_angle > -45.0f)
+		{
+			previous_node_q = new Vector2(current_possible_nodes[i, j - 1].position.x, current_possible_nodes[i, j - 1].position.z);
+		}
+
+		else
+		{
+			previous_node_q = new Vector2(current_possible_nodes[i - 1, j - 1].position.x, current_possible_nodes[i - 1, j - 1].position.z);
+		}
+
+
+		float qdist = Vector2.Distance(previous_node_q, node_q);
 		float ydist = transform.position.y - 0.5f - possible_node.position.y;
 		float angle = 0.0f;
-
-		if(Mathf.Abs(qdist) > 0.1f)
-		{
 		
-			Debug.Log("Possible node y: " + possible_node.position.y);
-			tmp_gizmo_drawer.Add(possible_node);
+		if(qdist > 0.0f)
+		{
 			angle = Mathf.Tan(ydist / qdist) * Mathf.Rad2Deg;
-			Debug.Log("Angle: " + angle);
+			if(angle > 2.0f)
+			{
+				Debug.Log("Possible node y: " + possible_node.position.y);
+				tmp_gizmo_drawer.Add(possible_node);
+				Debug.Log("Angle: " + angle);
+			}
 		}
+
+		
 
 		
 
