@@ -14,7 +14,7 @@ public class Robot : MonoBehaviour
 	private Lidar lidar;
 
 	private List<Node> global_path;
-
+	private RRT rrt;
 
 	private List<Node> tmp_gizmo_drawer;
 
@@ -26,6 +26,9 @@ public class Robot : MonoBehaviour
 		//global_path = AStar(quadtree.quadtree, goal);
 		k = 1.0f + k;
 		gravity = Physics.gravity.y;
+		rrt = new RRT(goal, 1.0f);
+		rrt.forward = transform.forward;
+		rrt.build_rrt(transform.position, 100);
 	}
 	
 
@@ -38,10 +41,11 @@ public class Robot : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
+		Debug.Log("Transform.forward: " + transform.forward);
 		//global_path = AStar(quadtree.quadtree, new Vector3(5, 5, 5));
 		// ASSIGN NODES AND THEIR WEIGHTS ("energy")
 		// THEN TRY TO FIND THE dPI/dQ & dPI/dY MIN ENERGY MAX DISTANCE INTERSECTION
-		Node[ , ] sample_possible_nodes = sample_lidar();
+		/*Node[ , ] sample_possible_nodes = sample_lidar();
 		List<Node> candidate_nodes = new List<Node>();
 		tmp_gizmo_drawer.Clear();
 
@@ -54,8 +58,12 @@ public class Robot : MonoBehaviour
 				{
 					Node possible_node = new Node(sample_possible_nodes[i, j].position);
 					float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
-					possible_node.calculate_energy(transform.position, k, mass, angle);
-					candidate_nodes.Add(possible_node);
+
+					if(Mathf.Abs(angle) < 90.0f)
+					{
+						possible_node.calculate_energy(transform.position, k, mass, angle);
+						candidate_nodes.Add(possible_node);
+					}
 				}
 			}
 		}
@@ -65,7 +73,7 @@ public class Robot : MonoBehaviour
 		for(int i = 0; i < candidate_nodes.Count; i++)
 		{
 			Debug.Log("node dQ: " + candidate_nodes[i].dPI_dQ + "\tnode dY: " + candidate_nodes[i].dPI_dY + "\tnode position: " + candidate_nodes[i].position);
-		}
+		}*/
 	}
 
 

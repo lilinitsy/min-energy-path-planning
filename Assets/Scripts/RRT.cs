@@ -17,15 +17,22 @@ public class RRT
 	public List<Node> nodes;
 	public List<Node> leaf_nodes;
 	public Vector3 global_goal;
-	public int step_size;
+	public float step_size;
+
+	// needs to be set in parent
+	public Vector3 forward;
 
 	public RRT()
 	{
-
+		nodes = new List<Node>();
+		leaf_nodes = new List<Node>();
+		global_goal = new Vector3(0.0f, 0.0f, 0.0f);
 	}
 
-	public RRT(Vector3 g, int sz)
+	public RRT(Vector3 g, float sz)
 	{
+		nodes = new List<Node>();
+		leaf_nodes = new List<Node>();
 		global_goal = g;
 		step_size = sz;
 	}
@@ -42,7 +49,7 @@ public class RRT
 		// iterations
 		int z = 0;
 
-		while(!goal_found())
+		while(!goal_found() && z < iterations)
 		{
 			z++;
 
@@ -53,20 +60,27 @@ public class RRT
 			if(random_choice > 17 || Vector3.Distance(begin_position, global_goal) < step_size * iterations)
 			{
 				local_goal_position = global_goal;
-				int closest_node = get_closest_node_to_point(global_goal);
-				begin_node = nodes[closest_node];
-				begin_position = begin_node.position;
 			}
 
 			else
 			{
-			//	local_goal_position = pick_local_goal_position(nodes[nodes.size() - 1].position, iterations);
+				local_goal_position = pick_local_goal_position(nodes[nodes.Count - 1].position);
 			}
 
+			int closest_node = get_closest_node_to_point(local_goal_position);
+			begin_node = nodes[closest_node];
+			begin_position = begin_node.position;
 
-			//RRTSTATUS status = extend(local_goal_position, ref begin_node);
-			
+			RRTSTATUS status = extend(local_goal_position, ref begin_node);
+			if(status == RRTSTATUS.GOAL_REACHED)
+			{
+				break;
+			}
+		}
 
+		for(int i = 0; i < 2000; i++)
+		{
+			Debug.Log("BUILDRRT DONE\n");
 		}
 	}
 
@@ -155,10 +169,23 @@ public class RRT
 	}
 
 	// Can ignore y, pick and x and z, and then follow up the norm of the hit object? hmm...
-	/*private Vector3 pick_local_goal_position(Vector3 start)
+	private Vector3 pick_local_goal_position(Vector3 start)
 	{
-		int x = start.x + step_size
-	}*/
+
+		Vector2 flat_direction = Random.insideUnitCircle;
+		float x = flat_direction.x + start.x;
+		float z = flat_direction.y + start.z;
+		Vector3 direction = new Vector3(x, forward.y, z);
+		float dist = Mathf.Sqrt(Mathf.Pow(x - start.x, 2.0f) + Mathf.Pow(z - start.z, 2.0f)) * step_size;
+
+		RaycastHit hit;
+		if(Physics.Raycast(start, direction, out hit, dist))
+		{
+			return new Vector3(hit.point.x, hit.point.y, hit.point.z);
+		}
+
+		return new Vector3(x * dist, start.y, z * dist);
+	}
 
 
 	private void remove_from_leaf_list(Node node)
