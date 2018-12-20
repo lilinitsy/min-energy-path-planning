@@ -129,9 +129,14 @@ public class Robot : MonoBehaviour
 	void OnDrawGizmosSelected()
 	{
 		Gizmos.color = Color.cyan;
-		for(int i = 0; i < tmp_gizmo_drawer.Count; i++)
+		/*for(int i = 0; i < tmp_gizmo_drawer.Count; i++)
 		{
-			Gizmos.DrawSphere(tmp_gizmo_drawer[i].position, 0.1f);
+			Gizmos.DrawSphere(tmp_gizmo_drawer[i].position, 0.05f);
+		}*/
+
+		for(int i = 0; i < rrt.nodes.Count; i++)
+		{
+			Gizmos.DrawSphere(rrt.nodes[i].position, 0.1f);
 		}
 	}
 
