@@ -15,8 +15,11 @@ public class Robot : MonoBehaviour
 
 	private List<Node> global_path;
 	private RRT rrt;
+	private Vector3 local_goal;
 
 	private List<Node> tmp_gizmo_drawer;
+
+	private int hacky_counter = 0;
 
 	// Use this for initialization
 	void Start()
@@ -25,6 +28,7 @@ public class Robot : MonoBehaviour
 		tmp_gizmo_drawer = new List<Node>();
 		k = 1.0f + k;
 		gravity = Physics.gravity.y;
+		local_goal = transform.position;
 		rrt = new RRT(goal, 1.0f);
 		rrt.forward = transform.forward;
 		rrt.build_rrt(transform.position, 1000);
@@ -39,75 +43,70 @@ public class Robot : MonoBehaviour
 		Node[ , ] sample_possible_nodes = sample_lidar();
 		Vector3[ , ] sample_hit_normals = sample_lidar_normals();
 		List<Node> candidate_nodes = new List<Node>();
-		tmp_gizmo_drawer.Clear();
-
-		for(int i = 1; i < sample_possible_nodes.GetLength(0) - 1; i++)
+		hacky_counter++;
+		if(Vector2.Distance(new Vector2(local_goal.x, local_goal.z), new Vector2(transform.position.x, transform.position.z)) < 0.1f && hacky_counter > 1)
 		{
-			for(int j = 1; j < sample_possible_nodes.GetLength(1) - 1; j++)
+			tmp_gizmo_drawer.Clear();
+
+			for(int i = 1; i < sample_possible_nodes.GetLength(0) - 1; i++)
 			{
-				// check for position
-				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
+				for(int j = 1; j < sample_possible_nodes.GetLength(1) - 1; j++)
 				{
-					Node possible_node = new Node(sample_possible_nodes[i, j].position);
-					Vector3 possible_node_normal = sample_hit_normals[i, j];
-					float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
-			
-					if(Mathf.Abs(angle) < 90.0f && Mathf.Abs(possible_node_normal.x) < 0.25f && Mathf.Abs(possible_node_normal.z) < 0.25f)
+					// check for position
+					if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
 					{
-						possible_node.calculate_energy(transform.position, k, mass, angle);
-						candidate_nodes.Add(possible_node);
+						Node possible_node = new Node(sample_possible_nodes[i, j].position);
+						Vector3 possible_node_normal = sample_hit_normals[i, j];
+						float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
+				
+						if(Mathf.Abs(angle) < 90.0f && Mathf.Abs(possible_node_normal.x) < 0.25f && Mathf.Abs(possible_node_normal.z) < 0.25f)
+						{
+							possible_node.calculate_energy(transform.position, k, mass, angle);
+							candidate_nodes.Add(possible_node);
+						}
 					}
 				}
 			}
+
+			List<Node> minimum_dPI_dYQ_nodes = candidate_nodes;
+			List<float> dist_sorted_vecs = new List<float>();
+
+			for(int i = 0; i < candidate_nodes.Count; i++)
+			{
+				dist_sorted_vecs.Add(Vector3.Distance(goal, candidate_nodes[i].position));
+			}
+
+			minimum_dPI_dYQ_nodes.Sort((n1, n2) => Mathf.Abs(n1.dPI_dY).CompareTo(Mathf.Abs(n2.dPI_dY)));
+			dist_sorted_vecs.Sort();
+			for(int i = 0; i < candidate_nodes.Count; i++)
+			{
+				//Debug.Log("Node least squared partials: " + candidate_nodes[i].least_square_value + "\tPosition: " + candidate_nodes[i].position.ToString("F4"));
+			}
+
+			Node minimum_node = get_minimum_PE_node(minimum_dPI_dYQ_nodes);
+			local_goal = minimum_node.position;
+			Debug.Log("*****");
+			Debug.Log("MINIMUM NODE: " +  minimum_node.position.ToString("F4"));
+			Debug.Log("*****");
+
+			rotate_routine(minimum_node);
 		}
 
-		List<Node> minimum_dPI_dYQ_nodes = candidate_nodes;
-		List<float> dist_sorted_vecs = new List<float>();
-
-		for(int i = 0; i < candidate_nodes.Count; i++)
+		else
 		{
-			dist_sorted_vecs.Add(Vector3.Distance(goal, candidate_nodes[i].position));
+			movement_routine();
 		}
-
-		minimum_dPI_dYQ_nodes.Sort((n1, n2) => Mathf.Abs(n1.dPI_dY).CompareTo(Mathf.Abs(n2.dPI_dY)));
-		dist_sorted_vecs.Sort();
-// maybe pick nodes with least dy....
-		/*Debug.Log("Minimum node dPI/dY: " + minimum_dPI_dYQ_nodes[0].dPI_dY + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[0].position));
-		Debug.Log("Minimum node dPI/dY: " + minimum_dPI_dYQ_nodes[1].dPI_dY + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[1].position));
-		Debug.Log("Minimum node dPI/dY: " + minimum_dPI_dYQ_nodes[2].dPI_dY + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[2].position));
-		Debug.Log("Minimum node dPI/dY: " + minimum_dPI_dYQ_nodes[3].dPI_dY + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[3].position));
-
-		Debug.Log("Minimum node least square: " + minimum_dPI_dYQ_nodes[0].least_square_value + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[0].position));
-		Debug.Log("Minimum node least square2: " + minimum_dPI_dYQ_nodes[1].least_square_value + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[1].position));
-		Debug.Log("Minimum node least square: " + minimum_dPI_dYQ_nodes[2].least_square_value + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[2].position));
-		Debug.Log("Minimum node least square: " + minimum_dPI_dYQ_nodes[3].least_square_value + "\tDistance: " + Vector3.Distance(goal, minimum_dPI_dYQ_nodes[4].position));
-
-		tmp_gizmo_drawer.Add(minimum_dPI_dYQ_nodes[0]);
-		tmp_gizmo_drawer.Add(minimum_dPI_dYQ_nodes[1]);
-		tmp_gizmo_drawer.Add(minimum_dPI_dYQ_nodes[2]);
-		tmp_gizmo_drawer.Add(minimum_dPI_dYQ_nodes[3]);
-		tmp_gizmo_drawer.Add(minimum_dPI_dYQ_nodes[4]);
-		*/
-		/*
-		for(int i = 0; i < candidate_nodes.Count; i++)
-		{
-			tmp_gizmo_drawer.Add(candidate_nodes[i]);
-		}*/
-
-		for(int i = 0; i < candidate_nodes.Count; i++)
-		{
-			//Debug.Log("Node least squared partials: " + candidate_nodes[i].least_square_value + "\tPosition: " + candidate_nodes[i].position.ToString("F4"));
-		}
-
-		Node minimum_node = get_minimum_PE_node(minimum_dPI_dYQ_nodes);
-		Debug.Log("*****");
-		Debug.Log("MINIMUM NODE: " +  minimum_node.position.ToString("F4"));
-		Debug.Log("*****");
-
-		movement_routine(minimum_node);
 	}
 
-	private void movement_routine(Node minimum_node)
+
+	private void movement_routine()
+	{
+		transform.position = Vector3.MoveTowards(transform.position, local_goal, 0.05f);
+		//Debug.Log("Distance: " + Vector3.Distance())
+	}
+
+
+	private void rotate_routine(Node minimum_node)
 	{
 		Quaternion target_rotation = Quaternion.LookRotation(minimum_node.position - transform.position);
 		transform.rotation = Quaternion.RotateTowards(transform.rotation, target_rotation, 1.0f);

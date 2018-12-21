@@ -29,7 +29,6 @@ public class Lidar : MonoBehaviour
 	{
 		Quaternion side_rotation = Quaternion.AngleAxis(degree_sweep_increment, transform.forward);
 		Quaternion up_rotation = Quaternion.AngleAxis(-degree_sweep_increment, transform.right);
-
 		RaycastHit hit;
 		Ray ray = new Ray();
 		ray.origin = transform.position;
