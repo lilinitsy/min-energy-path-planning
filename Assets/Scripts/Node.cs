@@ -39,7 +39,6 @@ public class Node
 		dPI_dQ = k * q - mass * Physics.gravity.y * Mathf.Cos(angle);
 		dPI_dY = k * y - mass * Physics.gravity.y * Mathf.Sin(angle);
 		
-		//least_square_value = dPI_dQ * dPI_dQ + dPI_dY * dPI_dY;
 		least_square_value = dPI_dQ + dPI_dY * dPI_dY;
 		energy = u_potential + v_potential;
 	}

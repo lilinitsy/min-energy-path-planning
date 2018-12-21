@@ -21,6 +21,8 @@ public class Robot : MonoBehaviour
 
 	private int hacky_counter = 0;
 
+	private float energy = 0.0f;
+
 	// Use this for initialization
 	void Start()
 	{
@@ -44,7 +46,16 @@ public class Robot : MonoBehaviour
 		Vector3[ , ] sample_hit_normals = sample_lidar_normals();
 		List<Node> candidate_nodes = new List<Node>();
 		hacky_counter++;
-		if(Vector2.Distance(new Vector2(local_goal.x, local_goal.z), new Vector2(transform.position.x, transform.position.z)) < 0.1f && hacky_counter > 1)
+
+		Debug.Log("Total energy: " + energy);
+
+		if(Vector2.Distance(new Vector2(local_goal.x, local_goal.z), new Vector2(goal.x, goal.z)) < 0.1f)
+		{
+			Debug.Log("FINISHED");
+			return;
+		}
+
+		else if(Vector2.Distance(new Vector2(local_goal.x, local_goal.z), new Vector2(transform.position.x, transform.position.z)) < 0.1f && hacky_counter > 1)
 		{
 			tmp_gizmo_drawer.Clear();
 
@@ -84,10 +95,8 @@ public class Robot : MonoBehaviour
 			}
 
 			Node minimum_node = get_minimum_PE_node(minimum_dPI_dYQ_nodes);
+			energy += minimum_node.energy;
 			local_goal = minimum_node.position;
-			Debug.Log("*****");
-			Debug.Log("MINIMUM NODE: " +  minimum_node.position.ToString("F4"));
-			Debug.Log("*****");
 
 			rotate_routine(minimum_node);
 		}
@@ -102,7 +111,6 @@ public class Robot : MonoBehaviour
 	private void movement_routine()
 	{
 		transform.position = Vector3.MoveTowards(transform.position, local_goal, 0.05f);
-		//Debug.Log("Distance: " + Vector3.Distance())
 	}
 
 
