@@ -28,15 +28,17 @@ public class Robot : MonoBehaviour
 		gravity = Physics.gravity.y;
 		rrt = new RRT(goal, 1.0f);
 		rrt.forward = transform.forward;
-		rrt.build_rrt(transform.position, 100);
+		rrt.build_rrt(transform.position, 1000);
+		
+		global_path = AStar(goal);
+
+		Debug.Log("Global path size: " + global_path.Count);
+		/*for(int i = 0; i < global_path.Count; i++)
+		{
+			Debug.Log("Global path " + i + ": " + global_path[i].position.ToString("F4"));
+		}*/
 	}
 	
-
-	/*
-		7PM 8/12:
-		Don't work on global path finding, just do local
-	
-	 */
 
 	// Update is called once per frame
 	void Update()
@@ -45,7 +47,8 @@ public class Robot : MonoBehaviour
 		//global_path = AStar(quadtree.quadtree, new Vector3(5, 5, 5));
 		// ASSIGN NODES AND THEIR WEIGHTS ("energy")
 		// THEN TRY TO FIND THE dPI/dQ & dPI/dY MIN ENERGY MAX DISTANCE INTERSECTION
-		/*Node[ , ] sample_possible_nodes = sample_lidar();
+		Node[ , ] sample_possible_nodes = sample_lidar();
+		Vector3[ , ] sample_hit_normals = sample_lidar_normals();
 		List<Node> candidate_nodes = new List<Node>();
 		tmp_gizmo_drawer.Clear();
 
@@ -57,9 +60,10 @@ public class Robot : MonoBehaviour
 				if(sample_possible_nodes[i, j].position.x != Mathf.Infinity && sample_possible_nodes[i, j].position.y != Mathf.Infinity)
 				{
 					Node possible_node = new Node(sample_possible_nodes[i, j].position);
+					Vector3 possible_node_normal = sample_hit_normals[i, j];
 					float angle = estimate_steepness_angle(possible_node, sample_possible_nodes, i, j);
-
-					if(Mathf.Abs(angle) < 90.0f)
+					Debug.Log("possible normal at " + possible_node.position + ": " + possible_node_normal);
+					if(Mathf.Abs(angle) < 90.0f && Mathf.Abs(possible_node_normal.x) < 0.25f && Mathf.Abs(possible_node_normal.z) < 0.25f)
 					{
 						possible_node.calculate_energy(transform.position, k, mass, angle);
 						candidate_nodes.Add(possible_node);
@@ -68,12 +72,17 @@ public class Robot : MonoBehaviour
 			}
 		}
 
+		for(int i = 0; i < candidate_nodes.Count; i++)
+		{
+			tmp_gizmo_drawer.Add(candidate_nodes[i]);
+		}
 
 		// MIGHT WANT TO SQUARE THESE?
 		for(int i = 0; i < candidate_nodes.Count; i++)
 		{
-			Debug.Log("node dQ: " + candidate_nodes[i].dPI_dQ + "\tnode dY: " + candidate_nodes[i].dPI_dY + "\tnode position: " + candidate_nodes[i].position);
-		}*/
+			//Debug.Log("node dQ: " + candidate_nodes[i].dPI_dQ + "\tnode dY: " + candidate_nodes[i].dPI_dY + "\tnode position: " + candidate_nodes[i].position.ToString("F4"));
+			Debug.Log("Node least squared partials: " + candidate_nodes[i].least_square_value + "\tPosition: " + candidate_nodes[i].position.ToString("F4"));
+		}
 	}
 
 
@@ -114,12 +123,6 @@ public class Robot : MonoBehaviour
 		if(qdist > 0.0f)
 		{
 			angle = Mathf.Tan(ydist / qdist) * Mathf.Rad2Deg;
-			if(angle > 2.0f)
-			{
-				Debug.Log("Possible node y: " + possible_node.position.y);
-				tmp_gizmo_drawer.Add(possible_node);
-				Debug.Log("Angle: " + angle);
-			}
 		}
 		
 		return angle;
@@ -129,14 +132,16 @@ public class Robot : MonoBehaviour
 	void OnDrawGizmosSelected()
 	{
 		Gizmos.color = Color.cyan;
-		/*for(int i = 0; i < tmp_gizmo_drawer.Count; i++)
-		{
-			Gizmos.DrawSphere(tmp_gizmo_drawer[i].position, 0.05f);
-		}*/
-
 		for(int i = 0; i < rrt.nodes.Count; i++)
 		{
 			Gizmos.DrawSphere(rrt.nodes[i].position, 0.1f);
+		}
+
+		Gizmos.color = Color.red;
+
+		for(int i = 0; i < tmp_gizmo_drawer.Count; i++)
+		{
+			Gizmos.DrawCube(tmp_gizmo_drawer[i].position, new Vector3(0.1f, 0.1f, 0.1f));
 		}
 	}
 
@@ -157,39 +162,138 @@ public class Robot : MonoBehaviour
 		return sample_points;
 	}
 
+	private Vector3[ , ] sample_lidar_normals()
+	{
+		Vector3[ , ] normals = new Vector3[lidar.hit_points.GetLength(0) / 3, lidar.hit_points.GetLength(1)];
+
+		for(int i = 0; i < normals.GetLength(0); i++)
+		{
+			for(int j = 0; j < normals.GetLength(1); j++)
+			{
+				Vector3 norm = lidar.hit_normals[i * 3, j];
+				normals[i, j] = norm;
+			}
+		}
+
+		return normals;
+	}
+
+	private struct AStarNode
+	{
+		public Node node;
+		public float gscore;
+		public float fscore;
+
+		public AStarNode(Node n, float g, float f)
+		{
+			node = n;
+			gscore = g;
+			fscore = f;
+		}
+	}
+
+	private struct NodeMap
+	{
+		public Node parent;
+		public Node child;
+
+		public NodeMap(Node p, Node c)
+		{
+			parent = p;
+			child = c;
+		}
+	}
 
 	private List<Node> AStar(Vector3 goal)
 	{
-		List<Node> path = new List<Node>();
-		// closed set
-		List<Node> evaluated_nodes = new List<Node>();
-		// open set
-		List<Node> open_nodes = new List<Node>();
-		// cost of getting from start node to node n
-		List<float> gscores = new List<float>();
-		List<float> fscores = new List<float>();
-		Node start = new Node(transform.position);
+		List<Node> closed_set = new List<Node>();
+		List<AStarNode> open_set = new List<AStarNode>();
+		List<NodeMap> came_from = new List<NodeMap>();
 
-		open_nodes.Add(start);
-		gscores.Add(0);
-		fscores.Add(heuristic_cost(start.position, goal));
+		open_set.Add(new AStarNode(rrt.nodes[0], 0, heuristic_cost(rrt.nodes[0].position, goal)));
 
-		while(open_nodes.Count > 0)
+		// add everything into open_set, with infinite g and f score
+		for(int i = 1; i < rrt.nodes.Count; i++)
 		{
-			Node current_node = open_nodes[get_lowest_fscore_node(fscores)];
+			open_set.Add(new AStarNode(rrt.nodes[0], Mathf.Infinity, Mathf.Infinity));
+		}
+		AStarNode current_node = get_lowest_fscore_node(open_set);
 
-			if(current_node.position == goal)
+		while(open_set.Count > 0)
+		{
+			current_node = get_lowest_fscore_node(open_set);
+			if(current_node.node.position == goal)
 			{
-
+				return reconstruct_path(came_from, current_node);
 			}
 
-			open_nodes.Remove(current_node);
-			evaluated_nodes.Add(current_node);
+			open_set.Remove(current_node);
+			closed_set.Add(current_node.node);
+			Debug.Log("Current node children: " + current_node.node.children.Count);
+			for(int i = 0; i < current_node.node.children.Count; i++)
+			{
+				Node child_node = current_node.node.children[i];
+				/*if(closed_set.Contains(child_node))
+				{
+					for(int q = 0; q < 1000; q++)
+					{
+						Debug.Log("CLOSED SET CONTAINED SMTH");
+					}
+					continue;
+				}*/
 
+				for(int j = 0; j < closed_set.Count; j++)
+				{
+					if(closed_set[j].position == child_node.position)
+					{
+						for(int q = 0; q < 1000; q++)
+					{
+						Debug.Log("CLOSED SET CONTAINED SMTH");
+					}
+					continue;
+					}
+				}
 
+				float tentative_gscore = current_node.gscore + heuristic_cost(current_node.node.position, child_node.position);
+				bool child_in_open_set = false;
+				int child_index = 0;
+				for(int j = 0; j < open_set.Count; j++)
+				{
+					if(child_node == open_set[i].node || child_node.position == open_set[i].node.position)
+					{
+						child_in_open_set = true;
+						child_index = i;
+						break;
+					}
+				}
+
+				if(!child_in_open_set)
+				{
+					open_set.Add(new AStarNode(child_node, tentative_gscore, tentative_gscore + heuristic_cost(child_node.position, goal)));
+				}
+
+				else if(!(tentative_gscore > open_set[child_index].gscore))
+				{
+					came_from.Add(new NodeMap(current_node.node, child_node));
+				}
+			}
 		}
 
-		return path;
+		return reconstruct_path(came_from, current_node);
+	}
+
+
+	private List<Node> reconstruct_path(List<NodeMap> came_from, AStarNode current_node)
+	{
+		List<Node> path = new List<Node>();
+
+		for(int i = 0; i < came_from.Count; i++)
+		{
+			path.Add(came_from[i].parent);
+		}
+
+
+		return new List<Node>();
 	}
 
 
@@ -206,9 +310,20 @@ public class Robot : MonoBehaviour
 	}
 
 
-	private int get_lowest_fscore_node(List<float> fscores)
+	private AStarNode get_lowest_fscore_node(List<AStarNode> nodes)
 	{
-		float minval = fscores.Min();
-		return fscores.IndexOf(minval);
+		float min = Mathf.Infinity;
+		int min_index = 0;
+
+		for(int i = 0; i < nodes.Count; i++)
+		{
+			if(nodes[i].fscore <= min)
+			{
+				min = nodes[i].fscore;
+				min_index = i;
+			}
+		}
+
+		return nodes[min_index];
 	}
 }

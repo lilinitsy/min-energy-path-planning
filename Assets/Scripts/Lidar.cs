@@ -14,14 +14,14 @@ public class Lidar : MonoBehaviour
 
 	// i + 1 is vertical, j + 1 is horizontal
 	public Vector3[ , ] hit_points;
-
-	public Vector3[ , ] finite_points;
+	public Vector3[ , ] hit_normals;
 
 	// Use this for initialization
 	void Start()
 	{
 		int horizontal_points = (int) (360.0f / degree_sweep_increment);
 		hit_points = new Vector3[number_vertical_passes, horizontal_points];
+		hit_normals = new Vector3[number_vertical_passes, horizontal_points];
 	}
 	
 	// Update is called once per frame
@@ -35,7 +35,6 @@ public class Lidar : MonoBehaviour
 		ray.origin = transform.position;
 		ray.direction = transform.forward;
 
-
 		int horizontal_passes = (int) (360.0f / degree_sweep_increment);
 		for(int i = 0; i < number_vertical_passes; i++)
 		{
@@ -44,11 +43,14 @@ public class Lidar : MonoBehaviour
 				if(Physics.Raycast(ray, out hit, max_range))
 				{
 					hit_points[i, j] = hit.point;
+					hit_normals[i, j] = hit.normal;
+					//Debug.Log("Hit normal at (i, j): " + i + " " + j + "\t: " + hit.normal);
 				}
 
 				else
 				{
 					hit_points[i, j] = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+					hit_normals[i, j] = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
 				}
 				
 				ray.direction = side_rotation * ray.direction;
@@ -69,7 +71,7 @@ public class Lidar : MonoBehaviour
 			{
 				if(Vector3.Distance(hit_points[i, j], transform.position) > 1.50f)
 				{
-				//	Gizmos.DrawSphere(hit_points[i, j], 0.1f);
+					//Gizmos.DrawSphere(hit_points[i, j], 0.1f);
 				}	
 			}
 		}

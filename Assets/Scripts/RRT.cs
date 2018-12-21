@@ -80,10 +80,10 @@ public class RRT
 		}
 
 	
-		for(int j = 0; j < nodes.Count; j++)
+		/*for(int j = 0; j < nodes.Count; j++)
 		{
 			Debug.Log("Nodes " + j + " position: " + nodes[j].position.ToString("F4"));
-		}
+		}*/
 		
 	}
 
@@ -188,6 +188,7 @@ public class RRT
 		RaycastHit hit;
 		if(Physics.Raycast(start, direction, out hit, dist))
 		{
+			forward = hit.transform.forward;
 			return new Vector3(hit.point.x, hit.point.y, hit.point.z);
 		}
 

@@ -8,6 +8,7 @@ public class Node
 	public float energy = 0.0f;
 	public float dPI_dQ = 0.0f;
 	public float dPI_dY = 0.0f;
+	public float least_square_value = 0.0f;
 	public List<Node> children;
 
 	public Node()
@@ -37,7 +38,8 @@ public class Node
 	
 		dPI_dQ = k * q - mass * Physics.gravity.y * Mathf.Cos(angle);
 		dPI_dY = k * y - mass * Physics.gravity.y * Mathf.Sin(angle);
-
+		
+		least_square_value = dPI_dQ * dPI_dQ + dPI_dY * dPI_dY;
 		energy = u_potential + v_potential;
 	}
 }
