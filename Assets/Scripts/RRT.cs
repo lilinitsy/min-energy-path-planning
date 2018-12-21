@@ -60,7 +60,6 @@ public class RRT
 			if(random_choice > 17 || Vector3.Distance(begin_position, global_goal) < step_size)
 			{
 				local_goal_position = global_goal;
-				Debug.Log("Local goal is global goal");
 			}
 
 			else
@@ -77,14 +76,7 @@ public class RRT
 			{
 				break;
 			}
-		}
-
-	
-		/*for(int j = 0; j < nodes.Count; j++)
-		{
-			Debug.Log("Nodes " + j + " position: " + nodes[j].position.ToString("F4"));
-		}*/
-		
+		}		
 	}
 
 
@@ -97,12 +89,10 @@ public class RRT
 
 		if(Vector3.Distance(begin_node.position, global_goal) < step_size)
 		{
-			Debug.Log("Distance is less than step size");
 			Vector3 goal_direction = global_goal - begin_node.position;
 			float goal_distance = Vector3.Distance(global_goal, begin_node.position);
 			if(!Physics.Raycast(begin_node.position, goal_direction, goal_distance))//, layer_mask))
 			{
-				Debug.Log("Distance is less than step size and no collisions detected");
 				if(begin_node.children.Count > 0)
 				{
 					remove_from_leaf_list(begin_node);
@@ -115,11 +105,9 @@ public class RRT
 				return RRTSTATUS.GOAL_REACHED;
 			}
 		}
-		Debug.Log("Local goal position: " + goal_pos.ToString("F4"));
 
 		if(Physics.Raycast(begin_node.position, direction, distance))//, layer_mask))
 		{
-			Debug.Log("Physics raycast hit a box");
 			return RRTSTATUS.TRAPPED;
 		}
 
@@ -127,7 +115,7 @@ public class RRT
 		{
 			remove_from_leaf_list(begin_node);
 		}
-		Debug.Log("No collisions detected, adding goal: " + goal_pos.ToString("F4"));
+
 		Node next_node = new Node(goal_pos);
 		begin_node.children.Add(next_node);
 		nodes.Add(next_node);

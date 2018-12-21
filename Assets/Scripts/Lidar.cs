@@ -44,7 +44,6 @@ public class Lidar : MonoBehaviour
 				{
 					hit_points[i, j] = hit.point;
 					hit_normals[i, j] = hit.normal;
-					//Debug.Log("Hit normal at (i, j): " + i + " " + j + "\t: " + hit.normal);
 				}
 
 				else
