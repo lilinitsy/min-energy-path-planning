@@ -49,7 +49,7 @@ public class Robot : MonoBehaviour
 
 		Debug.Log("Total energy: " + energy);
 
-		if(Vector2.Distance(new Vector2(local_goal.x, local_goal.z), new Vector2(goal.x, goal.z)) < 0.1f)
+		if(Vector2.Distance(new Vector2(transform.position.x, transform.position.z), new Vector2(goal.x, goal.z)) < 0.4f)
 		{
 			Debug.Log("FINISHED");
 			return;
